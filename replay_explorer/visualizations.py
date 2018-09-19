@@ -124,7 +124,7 @@ def plot_components_grid(model, images, labels=None, cmap='viridis',
     row_ind = column_ind = np.arange(n_col)
     grid = np.stack(np.meshgrid(row_ind, column_ind), axis=2).reshape(-1, 2)
 
-    cost_matrix = cdist(grid, projections, "sqeuclidean").astype(np.float64)
+    cost_matrix = cdist(grid, projections, 'sqeuclidean').astype(np.float64)
     cost_matrix *= BIG_NUMBER / cost_matrix.max()
     _, _, col_assignments = lapjv(cost_matrix, extend_cost=True)
     grid_jv = grid[col_assignments]
