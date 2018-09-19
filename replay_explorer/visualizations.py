@@ -172,24 +172,33 @@ def plot_components_interactive(model, images, replay_info, cmap='viridis'):
     projections -= projections.min(axis=0)
     projections /= projections.max(axis=0)
 
-    source = bplt.ColumnDataSource(data=dict(
-        x=projections[:, 0],
-        y=projections[:, 1],
-        desc=labels,
-        images=[_serialize_image(image) for image in images],
-    ))
+    data = (replay_info
+            .assign(x=projections[:, 0], y=projections[:, 1])
+            .to_dict(orient='list'))
+    vmin, vmax = 0.0, np.quantile(images, 0.95)
+    data['images'] = [_serialize_image(image, cmap=cmap, vmin=vmin, vmax=vmax)
+                      for image in images]
+    source = bplt.ColumnDataSource(data=data)
 
-    TOOLTIPS = """
-    <div>
+    TOOLTIPS = '''
+    <div style="background-color:rgba(255, 255, 255, 0.98)">
+        <div><b>@animal, @day, @epoch, #@ripple_number</b><br></div>
         <div>
             <img
-                src="data:image/jpeg;base64,@images" height="200" alt="@imgs" width="200"
-                style="float: left; margin: 0px 15px 15px 0px;"
-                border="2"
+                src="data:image/jpeg;base64,@images"
+                style="float: left; margin: 0px 5px 5px 0px;"
+                border="1"
             ></img>
         </div>
+        <div><table>
+        <tr><td>classified: </td><td><b>@predicted_state</b></td></tr>
+        <tr><td>probability: </td><td><b>@predicted_state_probability</b></td></tr>
+        <tr><td>linear position: </td><td><b>@linear_position</b></td></tr>
+        <tr><td>replay motion: </td><td><b>@replay_motion</b></td></tr>
+        <tr><td>duration: </td><td><b> @ripple_duration ms</b></td></tr>
+        </table></div>
     </div>
-    """
+    '''
 
     fig = bplt.figure(plot_width=800, plot_height=800, tooltips=TOOLTIPS,
                       title="Mouse over the dots")
