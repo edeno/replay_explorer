@@ -1,3 +1,7 @@
+import base64
+from io import BytesIO
+
+import bokeh.plotting as bplt
 import matplotlib.colors as colors
 import matplotlib.pyplot as plt
 import numpy as np
@@ -6,6 +10,7 @@ from matplotlib import offsetbox
 from scipy.spatial.distance import cdist
 
 from lap import lapjv
+from PIL import Image
 
 
 def plot_grid(images, col_wrap=15, cmap='viridis',
@@ -134,6 +139,62 @@ def plot_components_grid(model, images, labels=None, cmap='viridis',
     for (row_ind, col_ind), images in zip(grid_jv, images):
         axes[row_ind, col_ind].pcolorfast(images, cmap=cmap,
                                           vmin=vmin, vmax=vmax)
+
+
+def _serialize_image(image):
+    rgb_img = ((1 - image) * 255).astype(np.uint8)
+    img = Image.fromarray(rgb_img).convert('RGB')
+    buff = BytesIO()
+    img.save(buff, format='JPEG')
+    return base64.b64encode(buff.getvalue()).decode("utf-8")
+
+
+def plot_components_interactive(model, images, labels=None, ax=None,
+                                cmap='viridis'):
+    '''Reduce the dimensionality of the images and plot the components in a
+    scatter plot with examples of the images.
+
+    Parameters
+    ----------
+    model : scikit-learn model instance
+    images : ndarray, shape (n_images, width, height), optional
+    labels : None or ndarray, shape (n_images,), optional
+    ax : None or `.axes.Axes` object, optional
+    thumbnail_fraction : float, optional
+    cmap : str or `~matplotlib.colors.Colormap`, optional
+    plot_images : bool, optional
+
+    '''
+    ax = ax or plt.gca()
+
+    n_images = images.shape[0]
+    projections = model.fit_transform(images.reshape((n_images, -1)))
+    projections -= projections.min(axis=0)
+    projections /= projections.max(axis=0)
+
+    source = bplt.ColumnDataSource(data=dict(
+        x=projections[:, 0],
+        y=projections[:, 1],
+        desc=labels,
+        images=[_serialize_image(image) for image in images],
+    ))
+
+    TOOLTIPS = """
+    <div>
+        <div>
+            <img
+                src="data:image/jpeg;base64,@images" height="200" alt="@imgs" width="200"
+                style="float: left; margin: 0px 15px 15px 0px;"
+                border="2"
+            ></img>
+        </div>
+    </div>
+    """
+
+    fig = bplt.figure(plot_width=800, plot_height=800, tooltips=TOOLTIPS,
+                      title="Mouse over the dots")
+    fig.circle('x', 'y', size=20, source=source)
+    bplt.show(fig)
 
 
 def load_replay_data(file_path, poster_density_name, replay_info_name):
