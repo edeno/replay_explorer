@@ -141,12 +141,15 @@ def plot_components_grid(model, images, labels=None, cmap='viridis',
                                           vmin=vmin, vmax=vmax)
 
 
-def _serialize_image(image):
-    rgb_img = ((1 - image) * 255).astype(np.uint8)
-    img = Image.fromarray(rgb_img).convert('RGB')
+def _serialize_image(image, cmap='viridis', vmin=None, vmax=None):
+    if isinstance(cmap, str):
+        cmap = plt.get_cmap(cmap)
+    norm = colors.Normalize(vmin=vmin, vmax=vmax)
+    rgba = np.uint8(cmap(norm(image)) * 255)
+    img = Image.fromarray(rgba).convert('RGB')
     buff = BytesIO()
     img.save(buff, format='JPEG')
-    return base64.b64encode(buff.getvalue()).decode("utf-8")
+    return base64.b64encode(buff.getvalue()).decode('utf-8')
 
 
 def plot_components_interactive(model, images, labels=None, ax=None,
