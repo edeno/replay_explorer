@@ -200,9 +200,11 @@ def plot_components_interactive(model, images, replay_info, cmap='viridis'):
     </div>
     '''
 
-    fig = bplt.figure(plot_width=800, plot_height=800, tooltips=TOOLTIPS,
-                      title="Mouse over the dots")
-    fig.circle('x', 'y', size=20, source=source)
+    fig = bplt.figure(plot_width=600, plot_height=600, tooltips=TOOLTIPS,
+                      title='Replay Embeddings')
+    fig.circle('x', 'y', size=10, source=source)
+    fig.xaxis.axis_label = 'Embedding Dimension 1'
+    fig.yaxis.axis_label = 'Embedding Dimension 2'
     bplt.show(fig)
 
 
