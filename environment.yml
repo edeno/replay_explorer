@@ -1,0 +1,20 @@
+name: replay_explorer
+channels:
+- conda-forge
+- defaults
+dependencies:
+- "python >= 3.6"
+- numpy
+- scipy
+- pandas
+- scikit-learn
+- matplotlib
+- jupyter
+- lap
+- pillow
+- umap-learn
+- xarray
+- setuptools
+- "pytest >= 2.7.1"
+- pytest-cov
+- coveralls
