@@ -152,8 +152,7 @@ def _serialize_image(image, cmap='viridis', vmin=None, vmax=None):
     return base64.b64encode(buff.getvalue()).decode('utf-8')
 
 
-def plot_components_interactive(model, images, labels=None, ax=None,
-                                cmap='viridis'):
+def plot_components_interactive(model, images, replay_info, cmap='viridis'):
     '''Reduce the dimensionality of the images and plot the components in a
     scatter plot with examples of the images.
 
@@ -168,8 +167,6 @@ def plot_components_interactive(model, images, labels=None, ax=None,
     plot_images : bool, optional
 
     '''
-    ax = ax or plt.gca()
-
     n_images = images.shape[0]
     projections = model.fit_transform(images.reshape((n_images, -1)))
     projections -= projections.min(axis=0)
