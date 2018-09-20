@@ -176,7 +176,7 @@ def _serialize_image(image, cmap='viridis', vmin=None, vmax=None):
     return base64.b64encode(buff.getvalue()).decode('utf-8')
 
 
-def _get_categorical_colors(df, factor, palette=brewer['Paired']):
+def _get_categorical_colors(df, factor, palette=brewer['Set1']):
     factor_names = df.groupby(factor).groups.keys()
     n_factors = len(factor_names)
     colors = palette[n_factors]
@@ -196,7 +196,7 @@ def _plot_interactive(fig, df, images, cmap, vmin, vmax, name=None,
 
 
 def plot_components_interactive(model, images, replay_info, cmap='viridis',
-                                factor=None, factor_palette=brewer['Paired']):
+                                factor=None, factor_palette=brewer['Set1']):
     '''Reduce the dimensionality of the images and plot the components in a
     scatter plot with examples of the images.
 
