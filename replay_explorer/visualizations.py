@@ -6,6 +6,7 @@ import matplotlib.colors as colors
 import matplotlib.pyplot as plt
 import numpy as np
 import xarray as xr
+from bokeh.palettes import brewer
 from matplotlib import offsetbox
 from scipy.spatial.distance import cdist
 
@@ -155,7 +156,20 @@ def _serialize_image(image, cmap='viridis', vmin=None, vmax=None):
     return base64.b64encode(buff.getvalue()).decode('utf-8')
 
 
-def plot_components_interactive(model, images, replay_info, cmap='viridis'):
+def _get_categorical_colors(df, factor, palette=brewer['Spectral']):
+    factor_names = df[factor].unique()
+    n_factors = len(factor_names)
+    colors = palette[n_factors]
+
+    colormap = {name: color for color, name in zip(colors, factor_names)}
+
+    categorical_colors = df[factor].map(colormap)
+
+    return categorical_colors, colormap
+
+
+def plot_components_interactive(model, images, replay_info, cmap='viridis',
+                                factor=None):
     '''Reduce the dimensionality of the images and plot the components in a
     scatter plot with examples of the images.
 
@@ -181,6 +195,12 @@ def plot_components_interactive(model, images, replay_info, cmap='viridis'):
     vmin, vmax = 0.0, np.quantile(images, 0.95)
     data['images'] = [_serialize_image(image, cmap=cmap, vmin=vmin, vmax=vmax)
                       for image in images]
+    if factor is not None:
+        colors, colormap = _get_categorical_colors(replay_info, factor)
+        data['_colors'] = colors
+        colors = '_colors'
+    else:
+        colors = 'blue'
     source = bplt.ColumnDataSource(data=data)
 
     TOOLTIPS = '''
@@ -205,9 +225,10 @@ def plot_components_interactive(model, images, replay_info, cmap='viridis'):
 
     fig = bplt.figure(plot_width=600, plot_height=600, tooltips=TOOLTIPS,
                       title='Replay Embeddings')
-    fig.circle('x', 'y', size=10, source=source)
+    fig.circle('x', 'y', size=10, source=source, color=colors, legend=factor)
     fig.xaxis.axis_label = 'Embedding Dimension 1'
     fig.yaxis.axis_label = 'Embedding Dimension 2'
+
     bplt.show(fig)
 
 
