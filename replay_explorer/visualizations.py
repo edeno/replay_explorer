@@ -13,6 +13,26 @@ from scipy.spatial.distance import cdist
 from lap import lapjv
 from PIL import Image
 
+TOOLTIPS = '''
+<div style="background-color:rgba(255, 255, 255, 0.98)">
+    <div><b>@animal, @day, @epoch, #@ripple_number</b><br></div>
+    <div>
+        <img
+            src="data:image/jpeg;base64,@images"
+            style="float: left; margin: 0px 5px 5px 0px;"
+            border="1"
+        ></img>
+    </div>
+    <div><table>
+    <tr><td>classified: </td><td><b>@predicted_state</b></td></tr>
+    <tr><td>probability: </td><td><b>@predicted_state_probability</b></td></tr>
+    <tr><td>linear position: </td><td><b>@linear_position</b></td></tr>
+    <tr><td>replay motion: </td><td><b>@replay_motion</b></td></tr>
+    <tr><td>duration: </td><td><b> @ripple_duration ms</b></td></tr>
+    </table></div>
+</div>
+'''
+
 
 def plot_grid(images, col_wrap=15, cmap='viridis',
               subplot_height=2, subplot_width=2):
@@ -156,20 +176,27 @@ def _serialize_image(image, cmap='viridis', vmin=None, vmax=None):
     return base64.b64encode(buff.getvalue()).decode('utf-8')
 
 
-def _get_categorical_colors(df, factor, palette=brewer['Set1']):
-    factor_names = df[factor].unique()
+def _get_categorical_colors(df, factor, palette=brewer['Paired']):
+    factor_names = df.groupby(factor).groups.keys()
     n_factors = len(factor_names)
     colors = palette[n_factors]
 
-    colormap = {name: color for color, name in zip(colors, factor_names)}
+    return {name: color for color, name in zip(colors, factor_names)}
 
-    categorical_colors = df[factor].map(colormap)
 
-    return categorical_colors, colormap
+def _plot_interactive(fig, df, images, cmap, vmin, vmax, name=None,
+                      color='blue'):
+    data = df.to_dict(orient='list')
+    data['images'] = [_serialize_image(image.T, cmap=cmap,
+                                       vmin=vmin, vmax=vmax)
+                      for image in images]
+    source = bplt.ColumnDataSource(data=data)
+    fig.circle('x', 'y', size=10, source=source, color=color, legend=str(name),
+               muted_color=color, muted_alpha=0.2)
 
 
 def plot_components_interactive(model, images, replay_info, cmap='viridis',
-                                factor=None):
+                                factor=None, factor_palette=brewer['Paired']):
     '''Reduce the dimensionality of the images and plot the components in a
     scatter plot with examples of the images.
 
@@ -189,46 +216,28 @@ def plot_components_interactive(model, images, replay_info, cmap='viridis',
     projections -= projections.min(axis=0)
     projections /= projections.max(axis=0)
 
-    data = (replay_info
-            .assign(x=projections[:, 0], y=projections[:, 1])
-            .to_dict(orient='list'))
+    df = (replay_info
+          .assign(x=projections[:, 0], y=projections[:, 1]))
     vmin, vmax = 0.0, np.quantile(images, 0.95)
-    data['images'] = [_serialize_image(image.T, cmap=cmap, vmin=vmin, vmax=vmax)
-                      for image in images]
-    if factor is not None:
-        colors, colormap = _get_categorical_colors(replay_info, factor)
-        data['_colors'] = colors
-        colors = '_colors'
-    else:
-        colors = 'blue'
-    source = bplt.ColumnDataSource(data=data)
-
-    TOOLTIPS = '''
-    <div style="background-color:rgba(255, 255, 255, 0.98)">
-        <div><b>@animal, @day, @epoch, #@ripple_number</b><br></div>
-        <div>
-            <img
-                src="data:image/jpeg;base64,@images"
-                style="float: left; margin: 0px 5px 5px 0px;"
-                border="1"
-            ></img>
-        </div>
-        <div><table>
-        <tr><td>classified: </td><td><b>@predicted_state</b></td></tr>
-        <tr><td>probability: </td><td><b>@predicted_state_probability</b></td></tr>
-        <tr><td>linear position: </td><td><b>@linear_position</b></td></tr>
-        <tr><td>replay motion: </td><td><b>@replay_motion</b></td></tr>
-        <tr><td>duration: </td><td><b> @ripple_duration ms</b></td></tr>
-        </table></div>
-    </div>
-    '''
 
     fig = bplt.figure(plot_width=600, plot_height=600, tooltips=TOOLTIPS,
                       title='Replay Embeddings')
-    fig.circle('x', 'y', size=10, source=source, color=colors, legend=factor)
+
+    if factor is not None:
+        colormap = _get_categorical_colors(replay_info, factor, factor_palette)
+
+        for level_name, level_df in df.groupby(factor):
+            color = colormap[level_name]
+            _plot_interactive(fig, level_df, images[level_df.index],
+                              cmap, vmin, vmax, name=level_name, color=color)
+
+    else:
+        _plot_interactive(fig, df, images, cmap, vmin, vmax)
+
     fig.xaxis.axis_label = 'Embedding Dimension 1'
     fig.yaxis.axis_label = 'Embedding Dimension 2'
-
+    fig.legend.location = "top_left"
+    fig.legend.click_policy = "hide"
     bplt.show(fig)
 
 
