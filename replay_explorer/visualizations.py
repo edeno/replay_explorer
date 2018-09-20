@@ -191,7 +191,13 @@ def _plot_interactive(fig, df, images, cmap, vmin, vmax, name=None,
                                        vmin=vmin, vmax=vmax)
                       for image in images]
     source = bplt.ColumnDataSource(data=data)
-    fig.circle('x', 'y', size=10, source=source, color=color, legend=str(name),
+    if not isinstance(name, str):
+        try:
+            name = ', '.join(name)
+        except TypeError:
+            name = str(name)
+
+    fig.circle('x', 'y', size=10, source=source, color=color, legend=name,
                muted_color=color, muted_alpha=0.2)
 
 
