@@ -227,8 +227,8 @@ def plot_components_interactive(model, images, replay_info, cmap='viridis',
     projections -= projections.min(axis=0)
     projections /= projections.max(axis=0)
 
-    df = (replay_info
-          .assign(x=projections[:, 0], y=projections[:, 1]))
+    df = replay_info.assign(x=projections[:, 0], y=projections[:, 1])
+
     vmin, vmax = 0.0, np.quantile(images, 0.95)
 
     fig = bplt.figure(plot_width=600, plot_height=600, tooltips=TOOLTIPS,
