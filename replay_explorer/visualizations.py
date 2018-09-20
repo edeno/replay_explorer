@@ -178,11 +178,15 @@ def _serialize_image(image, cmap='viridis', vmin=None, vmax=None):
 
 
 def _get_categorical_colors(df, factor, palette=brewer['Set1']):
-    factor_names = df.groupby(factor).groups.keys()
-    n_factors = len(factor_names)
-    colors = palette[n_factors]
+    level_names = df.groupby(factor).groups.keys()
+    n_levels = len(level_names)
+    try:
+        colors = palette[n_levels]
+    except KeyError:
+        # There are only one or two levels
+        colors = palette[3][:n_levels]
 
-    return {name: color for color, name in zip(colors, factor_names)}
+    return {name: color for color, name in zip(colors, level_names)}
 
 
 def _plot_interactive(fig, df, images, cmap, vmin, vmax, name=None,
