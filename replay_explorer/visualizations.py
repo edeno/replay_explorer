@@ -156,7 +156,7 @@ def _serialize_image(image, cmap='viridis', vmin=None, vmax=None):
     return base64.b64encode(buff.getvalue()).decode('utf-8')
 
 
-def _get_categorical_colors(df, factor, palette=brewer['Spectral']):
+def _get_categorical_colors(df, factor, palette=brewer['Set1']):
     factor_names = df[factor].unique()
     n_factors = len(factor_names)
     colors = palette[n_factors]
