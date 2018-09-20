@@ -26,6 +26,7 @@ TOOLTIPS = '''
     <div><table>
     <tr><td>classified: </td><td><b>@predicted_state</b></td></tr>
     <tr><td>probability: </td><td><b>@predicted_state_probability</b></td></tr>
+    <tr><td>linear distance: </td><td><b>@linear_distance</b></td></tr>
     <tr><td>linear position: </td><td><b>@linear_position</b></td></tr>
     <tr><td>replay motion: </td><td><b>@replay_motion</b></td></tr>
     <tr><td>duration: </td><td><b> @ripple_duration ms</b></td></tr>
