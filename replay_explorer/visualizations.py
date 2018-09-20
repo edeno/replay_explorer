@@ -193,7 +193,7 @@ def plot_components_interactive(model, images, replay_info, cmap='viridis',
             .assign(x=projections[:, 0], y=projections[:, 1])
             .to_dict(orient='list'))
     vmin, vmax = 0.0, np.quantile(images, 0.95)
-    data['images'] = [_serialize_image(image, cmap=cmap, vmin=vmin, vmax=vmax)
+    data['images'] = [_serialize_image(image.T, cmap=cmap, vmin=vmin, vmax=vmax)
                       for image in images]
     if factor is not None:
         colors, colormap = _get_categorical_colors(replay_info, factor)
