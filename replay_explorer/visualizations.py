@@ -35,13 +35,15 @@ def plot_grid(images, col_wrap=15, cmap='viridis',
                              figsize=figsize,
                              sharex=True, sharey=True,
                              subplot_kw=dict(xticks=[], yticks=[]))
-
-    for ax, image in zip(axes.flat, images):
-        try:
-            ax.pcolorfast(image.T, cmap=cmap, vmin=0.0, vmax=vmax)
-        except IndexError:
-            pass
-        ax.axis('off')
+    try:
+        for ax, image in zip(axes.flat, images):
+            try:
+                ax.pcolorfast(image.T, cmap=cmap, vmin=0.0, vmax=vmax)
+            except IndexError:
+                pass
+            ax.axis('off')
+    except AttributeError:
+        axes.pcolorfast(images[0].T, cmap=cmap, vmin=0.0, vmax=vmax)
 
 
 def plot_components(model, images, labels=None, ax=None,
