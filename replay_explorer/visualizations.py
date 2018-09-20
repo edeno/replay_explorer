@@ -232,6 +232,14 @@ def plot_components_interactive(model, images, replay_info, cmap='viridis',
     bplt.show(fig)
 
 
+def _preprocess(ds):
+    n_position = ds.position.shape[0]
+    return (ds.sum(dim='state')
+            .sel(time=slice(0, 0.100))
+            .assign_coords(position=np.arange(n_position))
+            )
+
+
 def load_replay_data(file_path, poster_density_name, replay_info_name):
     '''Load the replay data and do some preprocessing.
 
@@ -248,9 +256,8 @@ def load_replay_data(file_path, poster_density_name, replay_info_name):
 
     '''
     posterior_density = (
-        xr.open_mfdataset(file_path, group=poster_density_name)
-        .sum(dim='state')
-        .sel(time=slice(0, 0.100))
+        xr.open_mfdataset(file_path, group=poster_density_name,
+                          concat_dim='concat_dim', preprocess=_preprocess)
         .posterior_density)
     replay_info = (xr.open_mfdataset(file_path, group=replay_info_name)
                    .to_dataframe())
