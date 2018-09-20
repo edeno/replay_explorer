@@ -27,6 +27,7 @@ def plot_grid(images, col_wrap=15, cmap='viridis',
     '''
     n_images = images.shape[0]
     vmax = np.quantile(images, 0.95)
+    col_wrap = np.min([n_images, col_wrap])
 
     n_row = np.ceil(n_images / col_wrap).astype(int)
     figsize = (col_wrap * subplot_width, n_row * subplot_height)
