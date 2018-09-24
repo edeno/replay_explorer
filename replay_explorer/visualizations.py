@@ -71,8 +71,8 @@ def plot_grid(images, col_wrap=15, cmap='viridis',
 
 def plot_components(model, images, labels=None, ax=None,
                     thumbnail_fraction=0.05, cmap='viridis', plot_images=True):
-    '''Reduce the dimensionality of the images and plot the components in a
-    scatter plot with examples of the images.
+    '''Embeds the image into a lower dimensional space and plots the
+    transformed output in a scatter plot with examples of the images.
 
     Parameters
     ----------
@@ -124,8 +124,8 @@ def plot_components(model, images, labels=None, ax=None,
 
 def plot_components_grid(model, images, labels=None, cmap='viridis',
                          subplot_width=2.0, subplot_height=2.0):
-    '''Reduce the dimensionality and plot similar images next to each other on
-    a grid.
+    '''Embeds the image into a lower dimensional space and plots the
+    transformed output in a grid with similar images next to each other.
 
     Parameters
     ----------
@@ -208,8 +208,9 @@ def _plot_interactive(fig, df, images, cmap, vmin, vmax, name=None,
 
 def plot_components_interactive(model, images, replay_info, cmap='viridis',
                                 factor=None, factor_palette=brewer['Set1']):
-    '''Reduce the dimensionality of the images and plot the components in a
-    scatter plot with examples of the images.
+    '''Embeds the image into a lower dimensional space and plots the
+    transformed output in an interactive scatter plot with tooltips displaying
+    information about the images.
 
     Parameters
     ----------
